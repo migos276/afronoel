@@ -1,0 +1,36 @@
+<div class="product-card">
+    <a href="{{ product.get_absolute_url }}" class="product-image-link">
+        <div class="product-image">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+            {% else %}
+            <div class="product-placeholder">
+                <i class="fas fa-image"></i>
+            </div>
+            {% endif %}
+            {% if product.discount_percentage > 0 %}
+            <span class="product-badge badge-discount">-{{ product.discount_percentage }}%</span>
+            {% endif %}
+            {% if product.is_bestseller %}
+            <span class="product-badge badge-bestseller">Best-seller</span>
+            {% endif %}
+        </div>
+    </a>
+    <div class="product-info">
+        <p class="product-category">{{ product.category.name }}</p>
+        <h3 class="product-name">
+            <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+        </h3>
+        <div class="product-price">
+            <span class="current-price">{{ product.price|floatformat:0 }} FCFA</span>
+            {% if product.old_price %}
+            <span class="old-price">{{ product.old_price|floatformat:0 }} FCFA</span>
+            {% endif %}
+        </div>
+        <button class="btn btn-add-cart" 
+                onclick="addToCart({{ product.id }})" 
+                data-product-id="{{ product.id }}">
+            <i class="fas fa-shopping-bag me-1"></i> Ajouter
+        </button>
+    </div>
+</div>

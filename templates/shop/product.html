@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - AfroNoël{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'shop:home' %}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item active">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-5">
+        <!-- Product Images -->
+        <div class="col-lg-6">
+            <div class="product-gallery">
+                <div class="main-image">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" id="mainImage">
+                    {% endif %}
+                    {% if product.discount_percentage > 0 %}
+                    <span class="discount-badge">-{{ product.discount_percentage }}%</span>
+                    {% endif %}
+                </div>
+                <div class="thumbnail-images">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="" class="thumbnail active" onclick="changeImage(this)">
+                    {% endif %}
+                    {% if product.image_2 %}
+                    <img src="{{ product.image_2.url }}" alt="" class="thumbnail" onclick="changeImage(this)">
+                    {% endif %}
+                    {% if product.image_3 %}
+                    <img src="{{ product.image_3.url }}" alt="" class="thumbnail" onclick="changeImage(this)">
+                    {% endif %}
+                    {% if product.image_4 %}
+                    <img src="{{ product.image_4.url }}" alt="" class="thumbnail" onclick="changeImage(this)">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-lg-6">
+            <div class="product-details">
+                <p class="product-category-label">{{ product.category.name }}</p>
+                <h1 class="product-title">{{ product.name }}</h1>
+                
+                <div class="product-price-block">
+                    <span class="current-price">{{ product.price|floatformat:0 }} FCFA</span>
+                    {% if product.old_price %}
+                    <span class="old-price">{{ product.old_price|floatformat:0 }} FCFA</span>
+                    <span class="savings">Économisez {{ product.old_price|add:"-"|add:product.price|floatformat:0 }} FCFA</span>
+                    {% endif %}
+                </div>
+
+                <div class="product-description">
+                    <p>{{ product.description }}</p>
+                </div>
+
+                <form id="addToCartForm" class="product-options">
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    
+                    {% if product.sizes_list %}
+                    <div class="option-group">
+                        <label class="option-label">Taille</label>
+                        <div class="size-options">
+                            {% for size in product.sizes_list %}
+                            <label class="size-option">
+                                <input type="radio" name="size" value="{{ size }}" {% if forloop.first %}checked{% endif %}>
+                                <span>{{ size }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if product.colors_list %}
+                    <div class="option-group">
+                        <label class="option-label">Couleur</label>
+                        <div class="color-options">
+                            {% for color in product.colors_list %}
+                            <label class="color-option">
+                                <input type="radio" name="color" value="{{ color }}" {% if forloop.first %}checked{% endif %}>
+                                <span>{{ color }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="option-group">
+                        <label class="option-label">Quantité</label>
+                        <div class="quantity-selector">
+                            <button type="button" class="qty-btn" onclick="updateQty(-1)">-</button>
+                            <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" id="qtyInput">
+                            <button type="button" class="qty-btn" onclick="updateQty(1)">+</button>
+                        </div>
+                        <span class="stock-info">
+                            {% if product.in_stock %}
+                            <i class="fas fa-check-circle text-success"></i> En stock ({{ product.stock }} disponibles)
+                            {% else %}
+                            <i class="fas fa-times-circle text-danger"></i> Rupture de stock
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="product-actions">
+                        <button type="submit" class="btn btn-christmas btn-lg w-100" {% if not product.in_stock %}disabled{% endif %}>
+                            <i class="fas fa-shopping-bag me-2"></i>Ajouter au panier
+                        </button>
+                        <a href="https://wa.me/{{ whatsapp_number }}?text=Bonjour%2C%20je%20suis%20intéressé%20par%20{{ product.name|urlencode }}" 
+                           target="_blank" 
+                           class="btn btn-whatsapp btn-lg w-100 mt-3">
+                            <i class="fab fa-whatsapp me-2"></i>Commander sur WhatsApp
+                        </a>
+                    </div>
+                </form>
+
+                <div class="product-features">
+                    <div class="feature">
+                        <i class="fas fa-truck"></i>
+                        <span>Livraison partout en Afrique</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Paiement sécurisé</span>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-undo"></i>
+                        <span>Retours sous 7 jours</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <section class="related-products mt-5 pt-5">
+        <h2 class="section-title">Produits similaires</h2>
+        <div class="row g-4">
+            {% for product in related_products %}
+            <div class="col-6 col-md-4 col-lg-3">
+                {% include 'shop/includes/product_card.html' with product=product %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changeImage(thumb) {
+    document.getElementById('mainImage').src = thumb.src;
+    document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+    thumb.classList.add('active');
+}
+
+function updateQty(change) {
+    const input = document.getElementById('qtyInput');
+    const newVal = parseInt(input.value) + change;
+    if (newVal >= 1 && newVal <= parseInt(input.max)) {
+        input.value = newVal;
+    }
+}
+
+document.getElementById('addToCartForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = {
+        product_id: formData.get('product_id'),
+        quantity: parseInt(formData.get('quantity')),
+        size: formData.get('size') || '',
+        color: formData.get('color') || ''
+    };
+    addToCartWithOptions(data);
+});
+
+function addToCartWithOptions(data) {
+    fetch('/api/cart/add/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            updateCartBadge(result.cart_count);
+            showNotification(result.message, 'success');
+        }
+    });
+}
+</script>
+{% endblock %}

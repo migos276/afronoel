@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Panier - AfroNoël{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="page-title">
+        <i class="fas fa-shopping-bag me-2"></i>Mon Panier
+    </h1>
+
+    {% if cart_items %}
+    <div class="row g-5">
+        <!-- Cart Items -->
+        <div class="col-lg-8">
+            <div class="cart-items">
+                {% for item in cart_items %}
+                <div class="cart-item" data-product-id="{{ item.product.id }}">
+                    <div class="cart-item-image">
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                        {% endif %}
+                    </div>
+                    <div class="cart-item-details">
+                        <h3 class="cart-item-name">
+                            <a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a>
+                        </h3>
+                        <p class="cart-item-variants">
+                            {% if item.size %}Taille: {{ item.size }}{% endif %}
+                            {% if item.color %}{% if item.size %} | {% endif %}Couleur: {{ item.color }}{% endif %}
+                        </p>
+                        <p class="cart-item-price">{{ item.product.price|floatformat:0 }} FCFA</p>
+                    </div>
+                    <div class="cart-item-quantity">
+                        <button class="qty-btn" onclick="updateCartQty({{ item.product.id }}, -1)">-</button>
+                        <span class="qty-value">{{ item.quantity }}</span>
+                        <button class="qty-btn" onclick="updateCartQty({{ item.product.id }}, 1)">+</button>
+                    </div>
+                    <div class="cart-item-subtotal">
+                        {{ item.subtotal|floatformat:0 }} FCFA
+                    </div>
+                    <button class="cart-item-remove" onclick="removeFromCart({{ item.product.id }})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <div class="order-summary">
+                <h2 class="summary-title">Récapitulatif</h2>
+                
+                <div class="summary-row">
+                    <span>Sous-total</span>
+                    <span id="cartTotal">{{ total|floatformat:0 }} FCFA</span>
+                </div>
+                
+                <div class="summary-row">
+                    <span>Livraison</span>
+                    <span>
+                        {% if free_shipping %}
+                        <span class="text-success">Gratuite</span>
+                        {% else %}
+                        À calculer
+                        {% endif %}
+                    </span>
+                </div>
+
+                {% if not free_shipping %}
+                <div class="free-shipping-notice">
+                    <i class="fas fa-truck"></i>
+                    Plus que {{ shipping_threshold|add:"-"|add:total|floatformat:0 }} FCFA pour la livraison gratuite
+                </div>
+                {% endif %}
+
+                <hr>
+
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span id="finalTotal">{{ total|floatformat:0 }} FCFA</span>
+                </div>
+
+                <button class="btn btn-christmas btn-lg w-100" onclick="openWhatsAppModal()">
+                    <i class="fas fa-check me-2"></i>Valider ma commande
+                </button>
+
+                <p class="payment-note">
+                    <i class="fas fa-info-circle"></i>
+                    Paiement via WhatsApp : Orange Money, MTN MoMo, Wave, ou à la livraison
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Modal -->
+    <div class="modal fade" id="whatsappModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content whatsapp-modal">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fab fa-whatsapp text-success me-2"></i>
+                        Finaliser votre commande
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-intro">
+                        Votre commande sera envoyée sur WhatsApp. Remplissez vos informations ci-dessous :
+                    </p>
+                    
+                    <form id="checkoutForm">
+                        <div class="mb-3">
+                            <label class="form-label">Votre nom complet</label>
+                            <input type="text" class="form-control" id="customerName" required placeholder="Ex: Marie Koné">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Numéro de téléphone</label>
+                            <input type="tel" class="form-control" id="customerPhone" required placeholder="Ex: 690 123 456">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ville</label>
+                            <select class="form-control" id="customerCity" required>
+                                <option value="">Choisir une ville</option>
+                                <option value="Douala">Douala</option>
+                                <option value="Yaoundé">Yaoundé</option>
+                                <option value="Abidjan">Abidjan</option>
+                                <option value="Dakar">Dakar</option>
+                                <option value="Libreville">Libreville</option>
+                                <option value="Brazzaville">Brazzaville</option>
+                                <option value="Kinshasa">Kinshasa</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Adresse de livraison</label>
+                            <textarea class="form-control" id="customerAddress" required rows="2" placeholder="Ex: Quartier Akwa, Rue des Palmiers, près de la pharmacie"></textarea>
+                        </div>
+                    </form>
+
+                    <div class="order-preview">
+                        <h6>Aperçu de votre message :</h6>
+                        <div class="message-preview" id="messagePreview">
+                            Chargement...
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-whatsapp" onclick="sendToWhatsApp()">
+                        <i class="fab fa-whatsapp me-2"></i>Envoyer sur WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Empty Cart -->
+    <div class="empty-cart">
+        <div class="empty-cart-icon">
+            <i class="fas fa-shopping-bag"></i>
+        </div>
+        <h2>Votre panier est vide</h2>
+        <p>Découvrez nos offres spéciales Noël et ajoutez des produits à votre panier.</p>
+        <a href="{% url 'shop:home' %}" class="btn btn-christmas btn-lg">
+            <i class="fas fa-gift me-2"></i>Découvrir les offres
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const whatsappNumber = "{{ whatsapp_number }}";
+const shopName = "{{ shop_name }}";
+let whatsappMessage = '';
+
+function updateCartQty(productId, change) {
+    const item = document.querySelector(`[data-product-id="${productId}"]`);
+    const qtySpan = item.querySelector('.qty-value');
+    const newQty = parseInt(qtySpan.textContent) + change;
+    
+    if (newQty < 1) {
+        removeFromCart(productId);
+        return;
+    }
+    
+    fetch('/api/cart/update/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ product_id: productId, quantity: newQty })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+
+function removeFromCart(productId) {
+    fetch('/api/cart/remove/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ product_id: productId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+
+function openWhatsAppModal() {
+    fetch('/api/whatsapp-link/')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                whatsappMessage = data.message;
+                updateMessagePreview();
+                new bootstrap.Modal(document.getElementById('whatsappModal')).show();
+            }
+        });
+}
+
+function updateMessagePreview() {
+    const name = document.getElementById('customerName').value || '[Votre nom]';
+    const phone = document.getElementById('customerPhone').value || '[Votre téléphone]';
+    const city = document.getElementById('customerCity').value || '[Votre ville]';
+    const address = document.getElementById('customerAddress').value || '[Votre adresse]';
+    
+    let preview = whatsappMessage
+        .replace('Nom : [à remplir]', `Nom : ${name}`)
+        .replace('Téléphone : [à remplir]', `Téléphone : ${phone}`)
+        .replace('Ville : [Douala / Yaoundé / Abidjan / etc.]', `Ville : ${city}`)
+        .replace('Adresse exacte de livraison : [à remplir]', `Adresse : ${address}`);
+    
+    document.getElementById('messagePreview').textContent = preview;
+}
+
+document.querySelectorAll('#checkoutForm input, #checkoutForm select, #checkoutForm textarea').forEach(el => {
+    el.addEventListener('input', updateMessagePreview);
+});
+
+function sendToWhatsApp() {
+    const form = document.getElementById('checkoutForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    const name = document.getElementById('customerName').value;
+    const phone = document.getElementById('customerPhone').value;
+    const city = document.getElementById('customerCity').value;
+    const address = document.getElementById('customerAddress').value;
+    
+    let message = whatsappMessage
+        .replace('[à remplir]', name)
+        .replace('[à remplir]', phone)
+        .replace('[Douala / Yaoundé / Abidjan / etc.]', city)
+        .replace('[à remplir]', address);
+    
+    const encodedMessage = encodeURIComponent(document.getElementById('messagePreview').textContent);
+    window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
+}
+</script>
+{% endblock %}

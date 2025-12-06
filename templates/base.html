@@ -1,0 +1,140 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AfroNoël - Boutique de Noël{% endblock %}</title>
+    <meta name="description" content="{% block description %}Découvrez notre sélection de Noël : vêtements, chaussures, décoration, électronique. Livraison partout en Afrique francophone.{% endblock %}">
+    
+ 
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Top Banner -->
+    <div class="top-banner">
+        <div class="container">
+            <span class="snowflake">❄</span>
+            Livraison gratuite dès 50 000 FCFA – Joyeux Noël !
+            <span class="snowflake">❄</span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg">
+                <a class="navbar-brand" href="{% url 'shop:home' %}">
+                    <span class="logo-icon">🎄</span>
+                    <span class="logo-text">Afro<span class="text-gold">Noël</span></span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav mx-auto">
+                        {% for cat in nav_categories %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ cat.get_absolute_url }}">{{ cat.name }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="header-actions">
+                        <a href="{% url 'shop:search' %}" class="header-action" title="Rechercher">
+                            <i class="fas fa-search"></i>
+                        </a>
+                        <a href="#" class="header-action" title="Mon compte">
+                            <i class="fas fa-user"></i>
+                        </a>
+                        <a href="{% url 'shop:cart' %}" class="header-action cart-icon" title="Panier">
+                            <i class="fas fa-shopping-bag"></i>
+                            {% if cart_count > 0 %}
+                            <span class="cart-badge" id="cart-badge">{{ cart_count }}</span>
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="footer-brand">
+                        <span class="logo-icon">🎄</span>
+                        <span class="logo-text">Afro<span class="text-gold">Noël</span></span>
+                    </div>
+                    <p class="footer-desc">Votre destination pour des fêtes magiques. Vêtements, chaussures, décoration et bien plus encore.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5 class="footer-title">Boutique</h5>
+                    <ul class="footer-links">
+                        {% for cat in nav_categories %}
+                        <li><a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5 class="footer-title">Informations</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">À propos</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Livraison</a></li>
+                        <li><a href="#">Retours</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h5 class="footer-title">Paiements acceptés</h5>
+                    <div class="payment-methods">
+                        <span class="payment-badge">Orange Money</span>
+                        <span class="payment-badge">MTN MoMo</span>
+                        <span class="payment-badge">Wave</span>
+                        <span class="payment-badge">Moov Money</span>
+                        <span class="payment-badge">Carte Bancaire</span>
+                        <span class="payment-badge">À la livraison</span>
+                    </div>
+                </div>
+            </div>
+            <hr class="footer-divider">
+            <div class="footer-bottom">
+                <p>&copy; 2025 AfroNoël. Tous droits réservés. Joyeux Noël ! 🎅</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

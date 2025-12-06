@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="snowflakes" aria-hidden="true">
+        <div class="snowflake">❅</div>
+        <div class="snowflake">❆</div>
+        <div class="snowflake">❅</div>
+        <div class="snowflake">❆</div>
+        <div class="snowflake">❅</div>
+        <div class="snowflake">❆</div>
+        <div class="snowflake">❅</div>
+        <div class="snowflake">❆</div>
+    </div>
+    <div class="container hero-content">
+        <h1 class="hero-title">Joyeux Noël !</h1>
+        <p class="hero-subtitle">Tout pour vos fêtes à prix incroyables</p>
+        <p class="hero-categories">Vêtements • Chaussures • Déco • Électronique • Beauté</p>
+        <p class="hero-delivery">Livraison partout en Afrique francophone</p>
+        <a href="#categories" class="btn btn-christmas btn-lg">
+            <i class="fas fa-gift me-2"></i>Découvrir les offres Noël
+        </a>
+    </div>
+</section>
+
+<!-- Flash Sales -->
+{% if flash_sales %}
+<section class="flash-sales-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-bolt text-warning me-2"></i>
+                Ventes Flash Noël
+            </h2>
+            <div class="countdown" id="countdown">
+                <div class="countdown-item">
+                    <span class="countdown-value" id="days">00</span>
+                    <span class="countdown-label">Jours</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-value" id="hours">00</span>
+                    <span class="countdown-label">Heures</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-value" id="minutes">00</span>
+                    <span class="countdown-label">Min</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-value" id="seconds">00</span>
+                    <span class="countdown-label">Sec</span>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4">
+            {% for product in flash_sales %}
+            <div class="col-6 col-md-4 col-lg-2">
+                {% include 'shop/includes/product_card.html' with product=product show_discount=True %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Categories -->
+<section class="categories-section" id="categories">
+    <div class="container">
+        <h2 class="section-title text-center">Nos Catégories</h2>
+        <div class="row g-4 justify-content-center">
+            {% for category in categories %}
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{{ category.get_absolute_url }}" class="category-card">
+                    <div class="category-image">
+                        {% if category.image %}
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                        {% else %}
+                        <div class="category-placeholder">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <h3 class="category-name">{{ category.name }}</h3>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Bestsellers -->
+{% if bestsellers %}
+<section class="products-section bg-light">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-star text-gold me-2"></i>
+                Best-sellers de Noël
+            </h2>
+            <a href="#" class="view-all">Voir tout <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="row g-4">
+            {% for product in bestsellers %}
+            <div class="col-6 col-md-4 col-lg-3">
+                {% include 'shop/includes/product_card.html' with product=product %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Gift Ideas by Budget -->
+<section class="budget-section">
+    <div class="container">
+        <h2 class="section-title text-center">
+            <i class="fas fa-gift text-christmas me-2"></i>
+            Idées Cadeaux par Budget
+        </h2>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="budget-card budget-card-1">
+                    <h3 class="budget-title">Moins de 20K</h3>
+                    <p class="budget-subtitle">Petits plaisirs</p>
+                    <div class="budget-products">
+                        {% for product in budget_under_20k %}
+                        <a href="{{ product.get_absolute_url }}" class="budget-product-link">
+                            {{ product.name|truncatechars:25 }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'shop:search' %}?max=20000" class="btn btn-outline-light btn-sm">Voir</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="budget-card budget-card-2">
+                    <h3 class="budget-title">20K - 50K</h3>
+                    <p class="budget-subtitle">Cadeaux parfaits</p>
+                    <div class="budget-products">
+                        {% for product in budget_20_50k %}
+                        <a href="{{ product.get_absolute_url }}" class="budget-product-link">
+                            {{ product.name|truncatechars:25 }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'shop:search' %}?min=20000&max=50000" class="btn btn-outline-light btn-sm">Voir</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="budget-card budget-card-3">
+                    <h3 class="budget-title">50K - 100K</h3>
+                    <p class="budget-subtitle">Cadeaux premium</p>
+                    <div class="budget-products">
+                        {% for product in budget_50_100k %}
+                        <a href="{{ product.get_absolute_url }}" class="budget-product-link">
+                            {{ product.name|truncatechars:25 }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'shop:search' %}?min=50000&max=100000" class="btn btn-outline-light btn-sm">Voir</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="budget-card budget-card-4">
+                    <h3 class="budget-title">+100K FCFA</h3>
+                    <p class="budget-subtitle">Cadeaux luxe</p>
+                    <div class="budget-products">
+                        {% for product in budget_over_100k %}
+                        <a href="{{ product.get_absolute_url }}" class="budget-product-link">
+                            {{ product.name|truncatechars:25 }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'shop:search' %}?min=100000" class="btn btn-outline-light btn-sm">Voir</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Brands -->
+{% if brands %}
+<section class="brands-section">
+    <div class="container">
+        <h2 class="section-title text-center">Nos Marques Partenaires</h2>
+        <div class="brands-carousel">
+            {% for brand in brands %}
+            <div class="brand-item">
+                <img src="{{ brand.logo.url }}" alt="{{ brand.name }}">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Featured Products -->
+{% if featured_products %}
+<section class="products-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">
+                <i class="fas fa-sparkles text-gold me-2"></i>
+                Sélection Spéciale Noël
+            </h2>
+        </div>
+        <div class="row g-4">
+            {% for product in featured_products %}
+            <div class="col-6 col-md-4 col-lg-3">
+                {% include 'shop/includes/product_card.html' with product=product %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Countdown Timer for Flash Sales
+function updateCountdown() {
+    const christmasDate = new Date('December 25, 2025 00:00:00').getTime();
+    const now = new Date().getTime();
+    const distance = christmasDate - now;
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    document.getElementById('days').textContent = String(days).padStart(2, '0');
+    document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+    document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+    document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();
+</script>
+{% endblock %}
